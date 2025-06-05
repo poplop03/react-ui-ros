@@ -5,6 +5,7 @@ const Config = {
   CMD_VEL_TOPIC: "/hoverboard_velocity_controller/cmd_vel",
   ODOM_TOPIC: "/odom",
   POSE_TOPIC: "/robot_pose",
+  
 };
 
 export default Config;
