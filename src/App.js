@@ -6,11 +6,11 @@ import "./App.css"; // Import global styles
 function App() {
   return (
     <div className="app-root">
-      <Header />
+      {/* <Header /> */}
       <div className="app-body">
         <Body />
       </div>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }
