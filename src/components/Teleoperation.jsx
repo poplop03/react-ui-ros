@@ -61,35 +61,37 @@ class Teleoperation extends Component {
     }
   }
 
-handleMove(event) {
-  console.log("handle move");
-  document.body.classList.add("no-scroll"); // Disable scroll
+  handleMove(event) {
+    console.log("handle move");
 
-  // Example: speed multipliers (could be state, props, or config)
-  const linearSpeed = this.state.linearSpeed || 0.5;    // Default: 1
-  const angularSpeed = this.state.angularSpeed || 0.5;  // Default: 1
+    // ⛔ Lock body scroll
+    document.body.classList.add("no-scroll");
 
-  var cmd_vel = new window.ROSLIB.Topic({
-    ros: this.state.ros,
-    name: Config.CMD_VEL_TOPIC,
-    messageType: "geometry_msgs/Twist",
-  });
+    const linearSpeed = this.state.linearSpeed || 0.5;
+    const angularSpeed = this.state.angularSpeed || 0.5;
 
-  var twist = new window.ROSLIB.Message({
-    linear: {
-      x: (event.y / 50) * linearSpeed,
-      y: 0,
-      z: 0,
-    },
-    angular: {
-      x: 0,
-      y: 0,
-      z: (-event.x / 50) * angularSpeed,
-    },
-  });
+    const cmd_vel = new window.ROSLIB.Topic({
+      ros: this.state.ros,
+      name: Config.CMD_VEL_TOPIC,
+      messageType: "geometry_msgs/Twist",
+    });
 
-  cmd_vel.publish(twist);
-}
+    const twist = new window.ROSLIB.Message({
+      linear: {
+        x: (event.y / 50) * linearSpeed,
+        y: 0,
+        z: 0,
+      },
+      angular: {
+        x: 0,
+        y: 0,
+        z: (-event.x / 50) * angularSpeed,
+      },
+    });
+
+    cmd_vel.publish(twist);
+  }
+
 
 handleStop(event) {
   console.log("handle stop");
@@ -109,20 +111,33 @@ handleStop(event) {
   cmd_vel.publish(twist);
 }
 
-
 render() {
   return (
-    <div style={{ display: "flex", justifyContent: "flex-end", padding: "px" }}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "flex-end",
+        padding: "10px",
+      }}
+    >
       <Joystick
-        size={200}
+        size={175}
         baseColor="#EEEEEE"
         stickColor="#BBBBBB"
-        move={this.handleMove}
-        stop={this.handleStop}
+        move={(event) => {
+          this.handleMove(event);
+          document.body.classList.add("no-scroll"); // Lock scroll only here
+        }}
+        stop={(event) => {
+          this.handleStop(event);
+          document.body.classList.remove("no-scroll"); // Unlock scroll
+        }}
       />
     </div>
   );
 }
+
+
 }
 
 export default Teleoperation;

@@ -9,5 +9,5 @@ html, body, #root {
   overflow: hidden !important;
   position: fixed;
   width: 100%;
-  touch-action: none; /* Prevent touch scroll too */
 }
+
