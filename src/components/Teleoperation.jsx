@@ -61,9 +61,13 @@ class Teleoperation extends Component {
     }
   }
 
-  handleMove(event) {
+handleMove(event) {
   console.log("handle move");
-  document.body.classList.add("no-scroll"); // 🚫 Disable scroll
+  document.body.classList.add("no-scroll"); // Disable scroll
+
+  // Example: speed multipliers (could be state, props, or config)
+  const linearSpeed = this.state.linearSpeed || 0.5;    // Default: 1
+  const angularSpeed = this.state.angularSpeed || 0.5;  // Default: 1
 
   var cmd_vel = new window.ROSLIB.Topic({
     ros: this.state.ros,
@@ -73,14 +77,14 @@ class Teleoperation extends Component {
 
   var twist = new window.ROSLIB.Message({
     linear: {
-      x: event.y / 50,
+      x: (event.y / 50) * linearSpeed,
       y: 0,
       z: 0,
     },
     angular: {
       x: 0,
       y: 0,
-      z: -event.x / 50,
+      z: (-event.x / 50) * angularSpeed,
     },
   });
 
@@ -89,7 +93,7 @@ class Teleoperation extends Component {
 
 handleStop(event) {
   console.log("handle stop");
-  document.body.classList.remove("no-scroll"); // ✅ Re-enable scroll
+  document.body.classList.remove("no-scroll"); // Re-enable scroll
 
   var cmd_vel = new window.ROSLIB.Topic({
     ros: this.state.ros,
