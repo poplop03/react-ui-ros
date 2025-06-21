@@ -3,167 +3,113 @@ import { Joystick } from "react-joystick-component";
 import Config from "../scripts/config";
 
 class Teleoperation extends Component {
-  state = { ros: null };
-
   constructor() {
     super();
 
     this.state = {
-    ros: null,
-    publishing: false,
-    intervalId: null,
-    lastTwist: null,
+      ros: null,
+      intervalId: null,
+      lastTwist: new window.ROSLIB.Message({
+        linear: { x: 0, y: 0, z: 0 },
+        angular: { x: 0, y: 0, z: 0 },
+      }),
     };
+
     this.init_connection();
 
     this.handleMove = this.handleMove.bind(this);
     this.handleStop = this.handleStop.bind(this);
   }
-  init_connection() {
-    this.state.ros = new window.ROSLIB.Ros();
-    console.log(this.state.ros);
 
-    this.state.ros.on("connection", () => {
-      console.log("connection established in Teleoperation Component!");
-      console.log(this.state.ros);
+  init_connection() {
+    const ros = new window.ROSLIB.Ros();
+    this.setState({ ros });
+
+    ros.on("connection", () => {
+      console.log("✅ ROS Connected!");
       this.setState({ connected: true });
     });
 
-    this.state.ros.on("close", () => {
-      console.log("connection is closed!");
+    ros.on("close", () => {
+      console.log("❌ ROS Connection closed!");
       this.setState({ connected: false });
-      //try to reconnect every 3 seconds
       setTimeout(() => {
         try {
-          this.state.ros.connect(
-            "ws://" +
-              Config.ROSBRIDGE_SERVER_IP +
-              ":" +
-              Config.ROSBRIDGE_SERVER_PORT +
-              ""
-          );
+          ros.connect(`ws://${Config.ROSBRIDGE_SERVER_IP}:${Config.ROSBRIDGE_SERVER_PORT}`);
         } catch (error) {
-          console.log("connection problem ");
+          console.log("Reconnection failed");
         }
       }, Config.RECONNECTION_TIMER);
     });
 
     try {
-      this.state.ros.connect(
-        "ws://" +
-          Config.ROSBRIDGE_SERVER_IP +
-          ":" +
-          Config.ROSBRIDGE_SERVER_PORT +
-          ""
-      );
+      ros.connect(`ws://${Config.ROSBRIDGE_SERVER_IP}:${Config.ROSBRIDGE_SERVER_PORT}`);
     } catch (error) {
-      console.log(
-        "ws://" +
-          Config.ROSBRIDGE_SERVER_IP +
-          ":" +
-          Config.ROSBRIDGE_SERVER_PORT +
-          ""
-      );
-      console.log("connection problem ");
+      console.log("Initial connection failed");
     }
+
+    this.cmd_vel = new window.ROSLIB.Topic({
+      ros: ros,
+      name: Config.CMD_VEL_TOPIC,
+      messageType: "geometry_msgs/Twist",
+    });
   }
 
-handleMove(event) {
-  // Create twist
-  const linearSpeed = this.state.linearSpeed || 0.5;
-  const angularSpeed = this.state.angularSpeed || 0.5;
-
-  const twist = new window.ROSLIB.Message({
-    linear: {
-      x: (event.y / 50) * linearSpeed,
-      y: 0,
-      z: 0,
-    },
-    angular: {
-      x: 0,
-      y: 0,
-      z: (-event.x / 50) * angularSpeed,
-    },
-  });
-
-  const cmd_vel = new window.ROSLIB.Topic({
-    ros: this.state.ros,
-    name: Config.CMD_VEL_TOPIC,
-    messageType: "geometry_msgs/Twist",
-  });
-
-  // Publish immediately
-  cmd_vel.publish(twist);
-  this.setState({ lastTwist: twist });
-
-  // Start interval publisher if not running
-  if (!this.state.publishing) {
+  componentDidMount() {
     const intervalId = setInterval(() => {
-      if (this.state.lastTwist) {
-        cmd_vel.publish(this.state.lastTwist);
+      if (this.cmd_vel && this.state.lastTwist) {
+        this.cmd_vel.publish(this.state.lastTwist);
       }
-    }, 100); // Send every 100ms
-
-    this.setState({ intervalId, publishing: true });
+    }, 50); // 20 Hz
+    this.setState({ intervalId });
   }
-}
 
+  componentWillUnmount() {
+    clearInterval(this.state.intervalId);
+  }
 
+  handleMove(event) {
+    const linearSpeed = 0.5;
+    const angularSpeed = 0.5;
 
-handleStop() {
-  const cmd_vel = new window.ROSLIB.Topic({
-    ros: this.state.ros,
-    name: Config.CMD_VEL_TOPIC,
-    messageType: "geometry_msgs/Twist",
-  });
+    const twist = new window.ROSLIB.Message({
+      linear: { x: (event.y / 50) * linearSpeed, y: 0, z: 0 },
+      angular: { x: 0, y: 0, z: (-event.x / 50) * angularSpeed },
+    });
 
-  const stopTwist = new window.ROSLIB.Message({
-    linear: { x: 0, y: 0, z: 0 },
-    angular: { x: 0, y: 0, z: 0 },
-  });
+    this.setState({ lastTwist: twist });
+    document.body.classList.add("no-scroll");
+  }
 
-  cmd_vel.publish(stopTwist);
+  handleStop() {
+    const stopTwist = new window.ROSLIB.Message({
+      linear: { x: 0, y: 0, z: 0 },
+      angular: { x: 0, y: 0, z: 0 },
+    });
 
-  // Stop the loop
-  clearInterval(this.state.intervalId);
-  this.setState({
-    publishing: false,
-    intervalId: null,
-    lastTwist: null,
-  });
+    this.setState({ lastTwist: stopTwist });
+    document.body.classList.remove("no-scroll");
+  }
 
-  // Re-enable scroll
-  document.body.classList.remove("no-scroll");
-}
-
-
-render() {
-  return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "flex-end",
-        padding: "10px",
-      }}
-    >
-      <Joystick
-        size={175}
-        baseColor="#EEEEEE"
-        stickColor="#BBBBBB"
-        move={(event) => {
-          this.handleMove(event);
-          document.body.classList.add("no-scroll"); // Lock scroll only here
+  render() {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          padding: "10px",
         }}
-        stop={(event) => {
-          this.handleStop(event);
-          document.body.classList.remove("no-scroll"); // Unlock scroll
-        }}
-      />
-    </div>
-  );
-}
-
-
+      >
+        <Joystick
+          size={175}
+          baseColor="#EEEEEE"
+          stickColor="#BBBBBB"
+          move={this.handleMove}
+          stop={this.handleStop}
+        />
+      </div>
+    );
+  }
 }
 
 export default Teleoperation;
