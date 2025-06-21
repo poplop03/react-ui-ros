@@ -8,11 +8,7 @@ class Teleoperation extends Component {
 
     this.state = {
       ros: null,
-      intervalId: null,
-      lastTwist: new window.ROSLIB.Message({
-        linear: { x: 0, y: 0, z: 0 },
-        angular: { x: 0, y: 0, z: 0 },
-      }),
+      connected: false,
     };
 
     this.init_connection();
@@ -55,19 +51,6 @@ class Teleoperation extends Component {
     });
   }
 
-  componentDidMount() {
-    const intervalId = setInterval(() => {
-      if (this.cmd_vel && this.state.lastTwist) {
-        this.cmd_vel.publish(this.state.lastTwist);
-      }
-    }, 50); // 20 Hz
-    this.setState({ intervalId });
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.state.intervalId);
-  }
-
   handleMove(event) {
     const linearSpeed = 0.5;
     const angularSpeed = 0.5;
@@ -77,7 +60,7 @@ class Teleoperation extends Component {
       angular: { x: 0, y: 0, z: (-event.x / 50) * angularSpeed },
     });
 
-    this.setState({ lastTwist: twist });
+    this.cmd_vel.publish(twist);
     document.body.classList.add("no-scroll");
   }
 
@@ -87,7 +70,7 @@ class Teleoperation extends Component {
       angular: { x: 0, y: 0, z: 0 },
     });
 
-    this.setState({ lastTwist: stopTwist });
+    this.cmd_vel.publish(stopTwist);
     document.body.classList.remove("no-scroll");
   }
 
