@@ -69,8 +69,8 @@ class Teleoperation extends Component {
   }
 
   handleMove(event) {
-    const linearSpeed = 1;
-    const angularSpeed = 1;
+    const linearSpeed = 0.5;
+    const angularSpeed = 0.5;
 
     const twist = new window.ROSLIB.Message({
       linear: { x: (event.y / 50) * linearSpeed, y: 0, z: 0 },
