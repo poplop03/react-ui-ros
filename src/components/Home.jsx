@@ -7,29 +7,40 @@ import { Row, Col, Container, Button } from "react-bootstrap";
 class Home extends Component {
   state = {};
 
+  // Hàm để thêm vị trí
+  addPosition(x, y) {
+    console.log("Add Position", x, y);
+  }
+
   render() {
     return (
       <div>
         <Container fluid>
           <h1 className="text-center mt-3">Robot Control Page</h1>
           {/* Connection Status */}
-        <Row className="mt-4">
-          {/* Left: Map */}
-          <Col xs={12} md={8}>
-            <Map />
-          </Col>
-          {/* Right: Joystick + RobotState */}
-          <Col
-            xs={12}
-            md={4}
-            style={{ minHeight: "480px", paddingRight: "20px" }}
-          >
-            <div className="d-flex flex-column align-items-end justify-content-between h-100">
-              <Teleoperation />
-              <RobotState />
+          <Row className="mt-4">
+            {/* Left: Map */}
+            <Col xs={12} md={8}>
+            <div className="d-flex">
+              <Map />
+              <div className="ml-5">
+                <RobotState />
+              </div>
             </div>
-          </Col>
-        </Row>
+              
+            </Col>
+            {/* Right: Joystick + RobotState */}
+            <Col
+              xs={12}
+              md={4}
+              style={{ minHeight: "480px", paddingRight: "20px" }}
+            >
+              <div className="d-flex flex-column align-items-center h-100">
+                <Teleoperation />
+                <button className="btn btn-primary" style={{ marginTop: "100px" }} onClick={() => this.addPosition(1, 2)}>Add Position</button>
+              </div>
+            </Col>
+          </Row>
         </Container>
       </div>
     );

@@ -64,7 +64,7 @@ class Map extends Component {
           id="nav_div"
           style={{
             width: "100%",
-            height: "300px", // Dynamically scales width, limits height
+            height: "500px", // Dynamically scales width, limits height
             border: "1px solid #ccc",
             backgroundColor: "#f5f5f5",
           }}
