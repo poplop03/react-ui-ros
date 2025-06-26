@@ -22,21 +22,19 @@ class Teleoperation extends Component {
     const ros = new window.ROSLIB.Ros();
 
     ros.on("connection", () => {
-      console.log("✅ Connected to ROSBridge");
+      console.log("Connected to ROSBridge");
       this.setState({ connected: true });
 
-      // Create topic once ROS is connected
       this.cmd_vel = new window.ROSLIB.Topic({
         ros: ros,
-        name: Config.CMD_VEL_TOPIC, // should be "/cmd_vel_web"
+        name: Config.CMD_VEL_TOPIC,
         messageType: "geometry_msgs/Twist",
       });
     });
 
     ros.on("close", () => {
-      console.log("❌ ROSBridge connection closed");
+      console.log("ROSBridge connection closed");
       this.setState({ connected: false });
-      // Reconnect after delay
       setTimeout(() => {
         try {
           ros.connect(`ws://${Config.ROSBRIDGE_SERVER_IP}:${Config.ROSBRIDGE_SERVER_PORT}`);
@@ -81,10 +79,9 @@ class Teleoperation extends Component {
     return (
       <div
         style={{
-          position: "fixed",
-          bottom: "100px",
-          left: "67px",
-          zIndex: 1000,
+          display: "flex",
+          justifyContent: "flex-end",
+          padding: "10px",
         }}
       >
         <Joystick
