@@ -1,105 +1,96 @@
-import React, { Component } from "react";
-import { Joystick } from "react-joystick-component";
-import Config from "../scripts/config";
-
-// programmed by duc with chatgpt assitant
+import React, { Component } from 'react';
+import { Joystick } from "react-joystick-component"
+import Config from "../data/config"
 
 class Teleoperation extends Component {
-  constructor() {
-    super();
-
-    this.state = {
-      ros: null,
-      connected: false,
+    state = {
+        connected: false,
+        ros: null,
     };
 
-    this.init_connection();
-
-    this.handleMove = this.handleMove.bind(this);
-    this.handleStop = this.handleStop.bind(this);
-  }
-
-  init_connection() {
-    const ros = new window.ROSLIB.Ros();
-    this.setState({ ros });
-
-    ros.on("connection", () => {
-      console.log("✅ ROS Connected!");
-      this.setState({ connected: true });
-
-      // 🔧 MOVE THIS HERE — only create topic *after* connection
-      this.cmd_vel = new window.ROSLIB.Topic({
-        ros: ros,
-        name: Config.CMD_VEL_TOPIC, // should be "/cmd_vel_web"
-        messageType: "geometry_msgs/Twist",
-      });
-
-      console.log("cmd_vel topic initialized on:", this.cmd_vel.name);
-    });
-
-    ros.on("close", () => {
-      console.log("❌ ROS Connection closed!");
-      this.setState({ connected: false });
-      setTimeout(() => {
-        try {
-          ros.connect(`ws://${Config.ROSBRIDGE_SERVER_IP}:${Config.ROSBRIDGE_SERVER_PORT}`);
-        } catch (error) {
-          console.log("Reconnection failed");
-        }
-      }, Config.RECONNECTION_TIMER);
-    });
-
-    try {
-      ros.connect(`ws://${Config.ROSBRIDGE_SERVER_IP}:${Config.ROSBRIDGE_SERVER_PORT}`);
-    } catch (error) {
-      console.log("Initial connection failed");
+    constructor() {
+        super();
+        this.handleMove = this.handleMove.bind(this);
+        this.handleStop = this.handleStop.bind(this);
+        this.state.ros = new window.ROSLIB.Ros();
     }
-  }
 
+    reconnect() {
+        if (!this.state.connected) {
+            console.log("Reconnecting to ROS...");
+            try {
+                this.state.ros.connect(`ws://${Config.ROSBRIDGE_SERVER_IP}:${Config.ROSBRIDGE_SERVER_PORT}`);
+            } catch (error) {
+                console.log("Reconnect failed:", error);
+            }
+        }
+    }
 
+    init_connection() {
+        setInterval(() => this.reconnect(), 5000);
 
-  handleMove(event) {
-    const linearSpeed = 0.5;
-    const angularSpeed = 0.5;
+        this.state.ros.on("connection", () => {
+            console.log("[Teleoperation] Connected to ROS");
+            this.setState({ connected: true });
 
-    const twist = new window.ROSLIB.Message({
-      linear: { x: (event.y / 50) * linearSpeed, y: 0, z: 0 },
-      angular: { x: 0, y: 0, z: (-event.x / 50) * angularSpeed },
-    });
+            // ✅ Initialize the topic only once when connected
+            this.cmd_vel = new window.ROSLIB.Topic({
+                ros: this.state.ros,
+                name: Config.CMD_VEL_TOPIC, // should be "/cmd_vel_web"
+                messageType: "geometry_msgs/Twist",
+            });
+        });
 
-    this.cmd_vel.publish(twist);
-    document.body.classList.add("no-scroll");
-  }
+        this.state.ros.on("close", () => {
+            console.log("ROS connection closed");
+            this.setState({ connected: false });
+        });
 
-  handleStop() {
-    const stopTwist = new window.ROSLIB.Message({
-      linear: { x: 0, y: 0, z: 0 },
-      angular: { x: 0, y: 0, z: 0 },
-    });
+        try {
+            this.state.ros.connect(`ws://${Config.ROSBRIDGE_SERVER_IP}:${Config.ROSBRIDGE_SERVER_PORT}`);
+        } catch (error) {
+            console.log("Initial connection failed");
+        }
+    }
 
-    this.cmd_vel.publish(stopTwist);
-    document.body.classList.remove("no-scroll");
-  }
+    componentDidMount() {
+        this.init_connection();
+    }
 
-  render() {
-    return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          padding: "10px",
-        }}
-      >
-        <Joystick
-          size={175}
-          baseColor="#EEEEEE"
-          stickColor="#BBBBBB"
-          move={this.handleMove}
-          stop={this.handleStop}
-        />
-      </div>
-    );
-  }
+    handleMove(event) {
+        if (!this.cmd_vel) return;
+
+        const twist = new window.ROSLIB.Message({
+            linear: { x: event.y / 50, y: 0, z: 0 },
+            angular: { x: 0, y: 0, z: event.x === 0 ? 0 : -event.x / 70 },
+        });
+
+        this.cmd_vel.publish(twist);
+    }
+
+    handleStop() {
+        if (!this.cmd_vel) return;
+
+        const twist = new window.ROSLIB.Message({
+            linear: { x: 0, y: 0, z: 0 },
+            angular: { x: 0, y: 0, z: 0 },
+        });
+
+        this.cmd_vel.publish(twist);
+    }
+
+    render() {
+        return (
+            <div style={{ position: "fixed", bottom: "100px", left: "67px" }}>
+                <Joystick
+                    baseColor="darkGrey"
+                    stickColor="grey"
+                    move={this.handleMove}
+                    stop={this.handleStop}
+                />
+            </div>
+        );
+    }
 }
 
 export default Teleoperation;
