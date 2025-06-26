@@ -44,19 +44,37 @@ class Map extends Component {
 
   view_map() {
     const container = document.getElementById("nav_div");
-    var viewer = new window.ROS2D.Viewer({
+
+    const viewer = new window.ROS2D.Viewer({
       divID: "nav_div",
       width: container.offsetWidth,
       height: container.offsetHeight,
     });
-    var navClient = new window.NAV2D.OccupancyGridClientNav({
+
+    const navClient = new window.NAV2D.OccupancyGridClientNav({
       ros: this.state.ros,
       rootObject: viewer.scene,
       viewer: viewer,
       serverName: "/move_base",
       withOrientation: true,
     });
+
+    // Manual throttling of scene redraws
+    let lastUpdate = 0;
+    const minInterval = 200; // milliseconds (5Hz)
+
+    // Wrap the rootObject’s update to throttle
+    const originalUpdate = viewer.scene.update.bind(viewer.scene);
+
+    viewer.scene.update = function (...args) {
+      const now = Date.now();
+      if (now - lastUpdate > minInterval) {
+        lastUpdate = now;
+        originalUpdate(...args);
+      }
+    };
   }
+
 
   render() {
     return (
