@@ -61,7 +61,7 @@ class Map extends Component {
 
     // Manual throttling of scene redraws
     let lastUpdate = 0;
-    const minInterval = 200; // milliseconds (5Hz)
+    const minInterval = 1; // milliseconds (5Hz)
 
     // Wrap the rootObject’s update to throttle
     const originalUpdate = viewer.scene.update.bind(viewer.scene);
