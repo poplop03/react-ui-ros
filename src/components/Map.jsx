@@ -39,7 +39,7 @@ class Map extends Component {
   componentDidMount() {
     this.init_connection();
     console.log("Map: componentDidMount" + this.state.ros);
-    this.view_map();
+    // this.view_map();
   }
 
   view_map() {
