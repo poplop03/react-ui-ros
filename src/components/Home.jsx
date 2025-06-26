@@ -8,8 +8,23 @@ class Home extends Component {
   state = {};
 
   // Hàm để thêm vị trí
-  addPosition(x, y) {
-    console.log("Add Position", x, y);
+  addPosition() {
+    const poseName = prompt("Enter a name for this position:");
+    if (!poseName || !this.state.ros) return;
+
+    const service = new window.ROSLIB.Service({
+      ros: this.state.ros,
+      name: "/save_named_pose",
+      serviceType: "std_msgs/String",
+    });
+
+    const request = new window.ROSLIB.ServiceRequest({
+      data: poseName,
+    });
+
+    service.callService(request, (result) => {
+      alert(`📍 ${result.data}`);
+    });
   }
 
   render() {
