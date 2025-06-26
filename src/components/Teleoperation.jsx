@@ -96,4 +96,6 @@ class Teleoperation extends Component {
   }
 }
 
+
+// this nigga working
 export default Teleoperation;
