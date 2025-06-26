@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import { Joystick } from "react-joystick-component";
 import Config from "../scripts/config";
 
+// programmed by duc with chatgpt assitant
+
 class Teleoperation extends Component {
   constructor() {
     super();

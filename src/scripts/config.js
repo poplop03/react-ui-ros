@@ -7,5 +7,4 @@ const Config = {
   POSE_TOPIC: "/robot_pose",
   
 };
-
 export default Config;
