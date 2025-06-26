@@ -85,7 +85,7 @@ class Teleoperation extends Component {
         }}
       >
         <Joystick
-          size={100}
+          size={175}
           baseColor="#EEEEEE"
           stickColor="#BBBBBB"
           move={this.handleMove}
