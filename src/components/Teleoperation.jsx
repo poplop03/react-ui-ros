@@ -27,14 +27,15 @@ class Teleoperation extends Component {
       console.log("✅ ROS Connected!");
       this.setState({ connected: true });
 
-      // ✅ Initialize the topic only after connection
+      // 🔧 MOVE THIS HERE — only create topic *after* connection
       this.cmd_vel = new window.ROSLIB.Topic({
         ros: ros,
-        name: Config.CMD_VEL_TOPIC,
+        name: Config.CMD_VEL_TOPIC, // should be "/cmd_vel_web"
         messageType: "geometry_msgs/Twist",
       });
-    });
 
+      console.log("cmd_vel topic initialized on:", this.cmd_vel.name);
+    });
 
     ros.on("close", () => {
       console.log("❌ ROS Connection closed!");
@@ -53,6 +54,8 @@ class Teleoperation extends Component {
     } catch (error) {
       console.log("Initial connection failed");
     }
+  }
+
 
 
   handleMove(event) {
