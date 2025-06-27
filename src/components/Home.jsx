@@ -94,7 +94,7 @@ class Home extends Component {
                     variant={this.state.relayEnabled ? "danger" : "success"}
                     onClick={() => this.toggleRelay(!this.state.relayEnabled)}
                   >
-                    {this.state.relayEnabled ? "Disable Teleop Relay" : "Enable Teleop Relay"}
+                    {this.state.relayEnabled ? "Disable joystick" : "Enable joystick"}
                   </Button>
                 </div>
               </div>
