@@ -74,6 +74,7 @@ class Teleoperation extends Component {
     });
 
     this.cmd_vel.publish(twist);
+    this.stopTimeout = setTimeout(() => this.handleStop(), 200);
   }
 
     handleStop(){
