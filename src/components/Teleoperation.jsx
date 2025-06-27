@@ -8,10 +8,11 @@ class Teleoperation extends Component {
     this.state = {
       ros: null,
       connected: false,
-      linearSpeed: 0.5,    // meters per second
-      angularSpeed: 1.0,   // radians per second
+      linearSpeed: 0.5,
+      angularSpeed: 1.0,
     };
 
+    this.stopTimeout = null;
     this.handleMove = this.handleMove.bind(this);
     this.handleStop = this.handleStop.bind(this);
   }
@@ -61,50 +62,36 @@ class Teleoperation extends Component {
     const { linearSpeed, angularSpeed } = this.state;
 
     const twist = new window.ROSLIB.Message({
-      linear: {
-        x: (event.y / 87.5) * linearSpeed,
-        y: 0,
-        z: 0,
-      },
-      angular: {
-        x: 0,
-        y: 0,
-        z: (-event.x / 87.5) * angularSpeed,
-      },
+      linear: { x: (event.y / 87.5) * linearSpeed, y: 0, z: 0 },
+      angular: { x: 0, y: 0, z: (-event.x / 87.5) * angularSpeed },
     });
 
     this.cmd_vel.publish(twist);
-    this.stopTimeout = setTimeout(() => this.handleStop(), 200);
+
+    // Reset and start new stop timeout
+    clearTimeout(this.stopTimeout);
+    this.stopTimeout = setTimeout(this.handleStop, 300);
   }
 
-    handleStop(){
-        var cmd_vel = new window.ROSLIB.Topic({
-            ros: this.state.ros,
-            name: Config.CMD_VEL_TOPIC,
-            messageType: "geometry_msgs/Twist",
-        });
-        var twist = new window.ROSLIB.Message({
-            linear : {
-                x: 0,
-                y: 0,
-                z: 0,
-            },
-            angular: {
-                x: 0,
-                y: 0,
-                z: 0,
-            }
-        });
-        cmd_vel.publish(twist);
-    }
+  handleStop() {
+    if (!this.cmd_vel) return;
+
+    console.log("Sending stop command");
+    const stopTwist = new window.ROSLIB.Message({
+      linear: { x: 0, y: 0, z: 0 },
+      angular: { x: 0, y: 0, z: 0 },
+    });
+
+    this.cmd_vel.publish(stopTwist);
+  }
 
   render() {
     return (
       <div
         style={{
           display: "flex",
-          flexDirection: "column", // stack vertically
-          alignItems: "flex-end",  // right-align everything
+          flexDirection: "column",
+          alignItems: "flex-end",
           padding: "10px",
         }}
       >
@@ -148,9 +135,6 @@ class Teleoperation extends Component {
       </div>
     );
   }
-
 }
 
-
-// this nigga workingd
 export default Teleoperation;
