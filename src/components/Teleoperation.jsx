@@ -8,8 +8,8 @@ class Teleoperation extends Component {
     this.state = {
       ros: null,
       connected: false,
-      linearSpeed: 0.5,
-      angularSpeed: 1.0,
+      linearSpeed: 0.2,
+      angularSpeed: 0.2,
     };
 
     this.stopTimeout = null;
@@ -62,8 +62,8 @@ class Teleoperation extends Component {
     const { linearSpeed, angularSpeed } = this.state;
 
     const twist = new window.ROSLIB.Message({
-      linear: { x: (event.y / 87.5) * linearSpeed, y: 0, z: 0 },
-      angular: { x: 0, y: 0, z: (-event.x / 87.5) * angularSpeed },
+      linear: { x: (event.y / 87.5) * linearSpeed*2, y: 0, z: 0 },
+      angular: { x: 0, y: 0, z: (-event.x / 87.5) * angularSpeed*2 },
     });
 
     this.cmd_vel.publish(twist);
