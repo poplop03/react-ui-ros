@@ -13,7 +13,7 @@ class Teleoperation extends Component {
     };
 
     this.handleMove = this.handleMove.bind(this);
-    // this.handleStop = this.handleStop.bind(this);
+    this.handleStop = this.handleStop.bind(this);
   }
 
   componentDidMount() {
@@ -76,6 +76,16 @@ class Teleoperation extends Component {
     this.cmd_vel.publish(twist);
   }
 
+  handleStop() {
+    if (!this.cmd_vel) return;
+
+    const twist = new window.ROSLIB.Message({
+      linear: { x: 0, y: 0, z: 0 },
+      angular: { x: 0, y: 0, z: 0 },
+    });
+
+    this.cmd_vel.publish(twist);
+  }
 
   render() {
     return (
