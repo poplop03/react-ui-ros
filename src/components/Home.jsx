@@ -89,11 +89,12 @@ class Home extends Component {
                   <Button className="mr-3" onClick={() => this.addPosition()}>
                     Add Position
                   </Button>
+
                   <Button
-                    variant={relayEnabled ? "danger" : "success"}
-                    onClick={this.toggleRelay}
+                    variant={this.state.relayEnabled ? "danger" : "success"}
+                    onClick={() => this.toggleRelay(!this.state.relayEnabled)}
                   >
-                    {relayEnabled ? "Disable Teleop Relay" : "Enable Teleop Relay"}
+                    {this.state.relayEnabled ? "Disable Teleop Relay" : "Enable Teleop Relay"}
                   </Button>
                 </div>
               </div>
