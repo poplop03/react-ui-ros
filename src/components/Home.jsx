@@ -32,20 +32,29 @@ class Home extends Component {
     const poseName = prompt("Enter a name for this position:");
     if (!poseName || !this.state.ros) return;
 
-    const service = new window.ROSLIB.Service({
-      ros: this.state.ros,
-      name: "/save_named_pose",
-      serviceType: "std_msgs/String",
-    });
+    // 1. Set the target name param
+    this.state.ros.setParam("/save_pose_send_goal/target_name", poseName, () => {
+      console.log(`Param set: /save_pose_send_goal/target_name = ${poseName}`);
 
-    const request = new window.ROSLIB.ServiceRequest({
-      data: poseName,
-    });
+      // 2. Call the save_pose service
+      const service = new window.ROSLIB.Service({
+        ros: this.state.ros,
+        name: "/save_pose_send_goal/save_pose",
+        serviceType: "std_srvs/Trigger",
+      });
 
-    service.callService(request, (result) => {
-      alert(`📍 ${result.data}`);
+      const request = new window.ROSLIB.ServiceRequest();
+
+      service.callService(request, (result) => {
+        if (result.success) {
+          alert(`📍 Saved pose '${poseName}' successfully.`);
+        } else {
+          alert(`❌ Failed to save pose: ${result.message}`);
+        }
+      });
     });
   }
+
 
   toggleRelay = () => {
     const { ros, relayEnabled } = this.state;
