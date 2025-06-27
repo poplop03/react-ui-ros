@@ -13,7 +13,7 @@ class Teleoperation extends Component {
     };
 
     this.handleMove = this.handleMove.bind(this);
-    this.handleStop = this.handleStop.bind(this);
+    // this.handleStop = this.handleStop.bind(this);
   }
 
   componentDidMount() {
