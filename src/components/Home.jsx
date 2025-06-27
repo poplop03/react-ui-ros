@@ -4,10 +4,30 @@ import RobotState from "./RobotState";
 import Teleoperation from "./Teleoperation";
 import Map from "./Map";
 import { Row, Col, Container, Button } from "react-bootstrap";
-class Home extends Component {
-  state = {};
 
-  // Hàm để thêm vị trí
+class Home extends Component {
+  constructor() {
+    super();
+    this.state = {
+      ros: new window.ROSLIB.Ros(),
+      relayEnabled: false,
+    };
+  }
+
+  componentDidMount() {
+    const ros = this.state.ros;
+    ros.connect(`ws://${window.location.hostname}:9090`);
+    ros.on("connection", () => {
+      console.log("Connected in Home.jsx");
+    });
+    ros.on("error", (err) => {
+      console.log("Error connecting to rosbridge", err);
+    });
+    ros.on("close", () => {
+      console.log("Connection to rosbridge closed");
+    });
+  }
+
   addPosition() {
     const poseName = prompt("Enter a name for this position:");
     if (!poseName || !this.state.ros) return;
@@ -27,32 +47,55 @@ class Home extends Component {
     });
   }
 
+  toggleRelay = () => {
+    const { ros, relayEnabled } = this.state;
+
+    const service = new window.ROSLIB.Service({
+      ros,
+      name: "/cmd_relay_enable",
+      serviceType: "std_srvs/SetBool",
+    });
+
+    const request = new window.ROSLIB.ServiceRequest({
+      data: !relayEnabled,
+    });
+
+    service.callService(request, (result) => {
+      alert(result.message);
+      this.setState({ relayEnabled: !relayEnabled });
+    });
+  };
+
   render() {
+    const { relayEnabled } = this.state;
+
     return (
       <div>
         <Container fluid>
           <h1 className="text-center mt-3">Robot Control Page</h1>
-          {/* Connection Status */}
           <Row className="mt-4">
-            {/* Left: Map */}
             <Col xs={12} md={8}>
-            <div className="d-flex">
-              <Map />
-              <div className="ml-5">
-                <RobotState />
+              <div className="d-flex">
+                <Map />
+                <div className="ml-5">
+                  <RobotState />
+                </div>
               </div>
-            </div>
-              
             </Col>
-            {/* Right: Joystick + RobotState */}
-            <Col
-              xs={12}
-              md={4}
-              style={{ minHeight: "480px", paddingRight: "20px" }}
-            >
+            <Col xs={12} md={4} style={{ minHeight: "480px", paddingRight: "20px" }}>
               <div className="d-flex flex-column align-items-center h-100">
                 <Teleoperation />
-                <button className="btn btn-primary" style={{ marginTop: "100px" }} onClick={() => this.addPosition(1, 2)}>Add Position</button>
+                <div className="mt-5">
+                  <Button className="mr-3" onClick={() => this.addPosition()}>
+                    Add Position
+                  </Button>
+                  <Button
+                    variant={relayEnabled ? "danger" : "success"}
+                    onClick={this.toggleRelay}
+                  >
+                    {relayEnabled ? "Disable Teleop Relay" : "Enable Teleop Relay"}
+                  </Button>
+                </div>
               </div>
             </Col>
           </Row>
