@@ -79,27 +79,20 @@ class Teleoperation extends Component {
 
   render() {
     return (
-      <div style={{ marginTop: "10px" }}>
-        <label>
-          Linear Speed:
-          <input
-            type="number"
-            step="0.1"
-            value={this.state.linearSpeed}
-            onChange={(e) => this.setState({ linearSpeed: parseFloat(e.target.value) })}
-            style={{ width: "60px", marginLeft: "5px" }}
-          />
-        </label>
-        <label style={{ marginLeft: "20px" }}>
-          Angular Speed:
-          <input
-            type="number"
-            step="0.1"
-            value={this.state.angularSpeed}
-            onChange={(e) => this.setState({ angularSpeed: parseFloat(e.target.value) })}
-            style={{ width: "60px", marginLeft: "5px" }}
-          />
-        </label>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          padding: "10px",
+        }}
+      >
+        <Joystick
+          size={175}
+          baseColor="#EEEEEE"
+          stickColor="#BBBBBB"
+          move={this.handleMove}
+          stop={this.handleStop}
+        />
       </div>
     );
   }
