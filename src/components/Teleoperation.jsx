@@ -8,6 +8,8 @@ class Teleoperation extends Component {
     this.state = {
       ros: null,
       connected: false,
+      linearSpeed: 0.5,    // meters per second
+      angularSpeed: 1.0,   // radians per second
     };
 
     this.handleMove = this.handleMove.bind(this);
@@ -56,41 +58,48 @@ class Teleoperation extends Component {
   handleMove(event) {
     if (!this.cmd_vel) return;
 
+    const { linearSpeed, angularSpeed } = this.state;
+
     const twist = new window.ROSLIB.Message({
-      linear: { x: event.y / 87.5, y: 0, z: 0 },
-      angular: { x: 0, y: 0, z: -event.x / 87.5 },
+      linear: {
+        x: (event.y / 87.5) * linearSpeed,
+        y: 0,
+        z: 0,
+      },
+      angular: {
+        x: 0,
+        y: 0,
+        z: (-event.x / 87.5) * angularSpeed,
+      },
     });
 
     this.cmd_vel.publish(twist);
   }
 
-  handleStop() {
-    if (!this.cmd_vel) return;
-
-    const twist = new window.ROSLIB.Message({
-      linear: { x: 0, y: 0, z: 0 },
-      angular: { x: 0, y: 0, z: 0 },
-    });
-
-    this.cmd_vel.publish(twist);
-  }
 
   render() {
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          padding: "10px",
-        }}
-      >
-        <Joystick
-          size={175}
-          baseColor="#EEEEEE"
-          stickColor="#BBBBBB"
-          move={this.handleMove}
-          stop={this.handleStop}
-        />
+      <div style={{ marginTop: "10px" }}>
+        <label>
+          Linear Speed:
+          <input
+            type="number"
+            step="0.1"
+            value={this.state.linearSpeed}
+            onChange={(e) => this.setState({ linearSpeed: parseFloat(e.target.value) })}
+            style={{ width: "60px", marginLeft: "5px" }}
+          />
+        </label>
+        <label style={{ marginLeft: "20px" }}>
+          Angular Speed:
+          <input
+            type="number"
+            step="0.1"
+            value={this.state.angularSpeed}
+            onChange={(e) => this.setState({ angularSpeed: parseFloat(e.target.value) })}
+            style={{ width: "60px", marginLeft: "5px" }}
+          />
+        </label>
       </div>
     );
   }
