@@ -67,16 +67,11 @@ class Teleoperation extends Component {
     });
 
     this.cmd_vel.publish(twist);
-
-    // Reset and start new stop timeout
-    clearTimeout(this.stopTimeout);
-    this.stopTimeout = setTimeout(this.handleStop, 300);
   }
 
   handleStop() {
     if (!this.cmd_vel) return;
 
-    console.log("Sending stop command");
     const stopTwist = new window.ROSLIB.Message({
       linear: { x: 0, y: 0, z: 0 },
       angular: { x: 0, y: 0, z: 0 },
@@ -84,6 +79,7 @@ class Teleoperation extends Component {
 
     this.cmd_vel.publish(stopTwist);
   }
+
 
   render() {
     return (
