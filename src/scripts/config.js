@@ -3,7 +3,7 @@ const Config = {
   ROSBRIDGE_SERVER_PORT: "9090",
   RECONNECTION_TIMER: 3000,
   CMD_VEL_TOPIC: "/cmd_vel_web",
-  ODOM_TOPIC: "/hoveboard_velocity_controller/odom",
+  ODOM_TOPIC: "/odom",
   POSE_TOPIC: "/robot_pose",
   
 };
