@@ -15,7 +15,7 @@ class UserPage extends Component {
   componentDidMount() {
     // 1. Connect to ROS
     const ros = new ROSLIB.Ros({
-      url: "ws://192.168.0.102:9090", // ← your ROS bridge address
+      url: "ws://192.168.0.103:9090", // ← your ROS bridge address
     });
 
     ros.on("connection", () => {
